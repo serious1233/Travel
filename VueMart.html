@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VueMart</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* =========================================
+           全域與排版基礎 (更細膩的設計)
+           ========================================= */
+        :root { 
+            --primary: #3498db;     /* 現代藍 */
+            --secondary: #2c3e50;   /* 深色藍灰 */
+            --accent: #2ecc71;      /* 成功綠 */
+            --danger: #ff7675;      /* 警告紅 */
+            --bg: #f8f9fc;          /* 極淺灰背景 */
+            --text-main: #333;      /* 主要文字色 */
+            --text-muted: #888;     /* 次要文字色 */
+            --shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            --shadow-hover: 0 10px 25px rgba(0,0,0,0.1); 
+        }
+        
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text-main); line-height: 1.6; }
+        * { box-sizing: border-box; }
+        button { cursor: pointer; transition: 0.3s; border: none; font-family: inherit; }
+        h2, h3 { color: var(--secondary); margin-top: 0; }
+        p { margin: 0 0 15px 0; }
+
+        /* =========================================
+           導覽列 (Navbar) - 現代且精飾
+           ========================================= */
+        .navbar { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; margin-bottom: 0; }
+        .logo { font-size: 28px; font-weight: 800; color: var(--secondary); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-btn { background: none; font-size: 16px; color: var(--text-muted); padding: 10px 18px; border-radius: 8px; font-weight: bold; position: relative; }
+        .nav-btn:hover { color: var(--primary); background: #f0f8ff; }
+        .nav-btn.active { color: var(--primary); background: #e1f0fa; }
+        .cart-badge { background: #e74c3c; color: white; border-radius: 50%; padding: 2px 8px; font-size: 12px; margin-left: 5px; font-weight: bold; }
+        
+        /* =========================================
+           主要內容區容器
+           ========================================= */
+
+        .main-container { max-width: 1100px; margin: 40px auto; padding: 0 25px; min-height: 75vh; }
+        /* =========================================
+           頁面 1: 首頁樣式 (含現代輪播)
+           ========================================= */
+        .carousel-item img { height: 450px; object-fit: cover; border-radius: 20px; }
+        .hero-banner { margin-bottom: 40px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-hover); }
+        .carousel-caption h3 { font-weight: 800; }
+        .hero-content { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 50px; border-radius: 20px; text-align: center; box-shadow: var(--shadow); }
+        .hero-content h2 { color: white; font-weight: 800; font-size: 32px; margin-bottom: 15px; }
+        .hero-btn { margin-top: 20px; background: white; color: #764ba2; padding: 12px 28px; font-size: 18px; border-radius: 30px; font-weight: bold; }
+        .hero-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        /* =========================================
+           頁面 2: 商品列表樣式 (卡片精飾)
+           ========================================= */
+        .page-title-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s ease-out; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        .product-img { width: 100%; height: 210px; object-fit: cover; }
+        .product-info { padding: 20px; }
+        .product-title { font-size: 19px; font-weight: 700; margin: 0 0 12px 0; }
+        .product-price { color: #e74c3c; font-size: 22px; font-weight: 800; margin-bottom: 18px; }
+        .add-btn { width: 100%; background: var(--secondary); color: white; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .add-btn:hover { background: var(--primary); }
+
+        /* =========================================
+           頁面 3: 購物車樣式 (表格精飾)
+           ========================================= */
+        .cart-section { background: white; padding: 30px; border-radius: 12px; box-shadow: var(--shadow); }
+        .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .cart-table th, .cart-table td { padding: 18px; text-align: left; border-bottom: 1px solid #eee; }
+        .cart-table th { background: #fcfdfe; color: var(--text-muted); font-weight: bold; }
+        .cart-item-name { display: flex; align-items: center; gap: 15px; font-weight: 600; }
+        .qty-control { display: flex; align-items: center; gap: 8px; }
+        .qty-btn { background: #f4f6f8; color: var(--secondary); width: 32px; height: 32px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .qty-btn:hover { background: #e1e8ed; }
+        .del-btn { background: var(--danger); color: white; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;}
+        .del-btn:hover { background: #ff4757; }
+        .cart-summary { text-align: right; border-top: 2px solid #eee; padding-top: 25px; }
+        .cart-total-text { margin: 0 0 18px 0; font-size: 18px; color: var(--secondary); }
+        .cart-total-price { color: #e74c3c; font-size: 30px; font-weight: 800; margin-left: 10px; }
+        .checkout-btn { width: auto; padding: 14px 35px; background: var(--accent); color: white; font-size: 18px; border-radius: 10px; font-weight: bold; }
+        .checkout-btn:hover { background: #27ae60; }
+
+        /* =========================================
+           Toast 提示系統 (現代設計)
+           ========================================= */
+        .toast-container-custom { position: fixed; bottom: 30px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 12px; }
+        .toast-custom { background: white; color: var(--secondary); padding: 15px 25px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; animation: slideUpToast 0.3s forwards; border-left: 4px solid var(--accent); font-weight: 600; }
+        @keyframes slideUpToast { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav class="navbar">
+            <div class="logo" @click="currentPage = 'HomeView'">
+                <i class="fas fa-plug"></i>
+                VueMart
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn" :class="{ active: currentPage === 'HomeView' }" @click="currentPage = 'HomeView'">首頁</button>
+                <button class="nav-btn" :class="{ active: currentPage === 'ProductsView' }" @click="currentPage = 'ProductsView'">商品列表</button>
+                <button class="nav-btn" :class="{ active: currentPage === 'CartView' }" @click="currentPage = 'CartView'"><i class="fas fa-shopping-cart"></i>我的購物車 
+                    <span class="cart-badge" v-if="totalCartItems > 0" class="cart-badge">{{ totalCartItems }}</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-container">
+            <component :is="currentPage"></component>
+        </main>
+
+        <div class="toast-container-custom">
+            <div class="toast-custom" v-for="toast in toasts" :key="toast.id">
+                <i class="fas fa-check-circle" style="color:var(--accent); font-size: 1.2em;"></i>
+                {{ toast.msg }}
+            </div>
+        </div>    
+    </div>
+
+    <script type="text/x-template" id="home-template">
+        <div>
+            <div id="homeCarousel" class="carousel slide hero-banner" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button v-for="(slide, index) in slides" :key="'ind-'+slide.id" type="button" data-bs-target="#homeCarousel" :data-bs-slide-to="index" :class="{ 'active': index === 0 }"></button>
+                </div>
+
+                <div class="carousel-inner">
+                    <div class="carousel-item" v-for="(slide, index) in slides" :key='slide.id' :class="{ 'active': index === 0 }">
+                        <img :src="slide.image" class="d-block w-100" :alt="slide.title">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h3 style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8); font-size: 2.2em;">{{ slide.title }}</h3>
+                            <p style="text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 1.1em;">{{ slide.description }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+
+            <div class="hero-content">
+                <h2>探索最新的科技周邊</h2>
+                <p>為工程師與設計師打造的高質感配備，全館免運費！</p>
+                <button class="hero-btn" @click="goToProducts">
+                    立即選購<i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+            </div>
+        </div>        
+    </script>
+
+    <script type="text/x-template" id="products-template">
+        <div>
+            <div class="page-title-section">
+                <h2>全部商品</h2>
+            </div>
+            <div class="product-grid">
+                <div class="product-card" v-for="item in products" :key="item.id">
+                <img :src="item.image" :alt="item.name" class="product-img" @error="item.image = 'https://placehold.co/500x400/eeeeee/999999?text=圖片載入失敗'">
+                <div class="product-info">
+                        <h3 class="product-title">{{ item.name }}</h3>
+                        <div class="product-price">NT$ {{ item.price }}</div>
+                        <button class="add-btn" @click="handleAddToCart(item)">
+                            <i class="fas fa-cart-plus"></i> 加入購物車
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="cart-template">
+        <div>
+            <div class="page-title-section">
+                <h2>你的購物車</h2>
+            </div>
+            <div v-if="cart.length === 0" style="text-align:center; padding: 60px; background: white; border-radius: 12px; box-shadow: var(--shadow);">
+                <i class="fas fa-box-open" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+                <h3 style="color:var(--text-muted);">購物車空空如也，快去逛逛吧！</h3>
+                <button class="hero-btn" style="width: auto; padding: 12px 25px; margin-top:20px; background: var(--secondary); color: white;" @click="goToProducts">
+                    <i class="fas fa-arrow-left" style="margin-right:8px;"></i> 去選購商品
+                </button>
+            </div>
+
+            <div v-else class="cart-section">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>商品項目</th>
+                            <th>價格</th>
+                            <th>數量</th>
+                            <th>小計</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in cart" :key="item.id">
+                            <td>
+                                <div class="cart-item-name">
+                                    <img :src="item.image" :alt="item.name" style="width: 50px; height: 50px; object-fit:cover; border-radius:8px;">
+                                    <strong>{{ item.name }}</strong>
+                                </div>
+                            </td>
+                            <td>NT$ {{ item.price }}</td>
+                            <td>
+                                <div class="qty-control">
+                                    <button class="qty-btn" @click="updateQty(item, -1)">-</button>
+                                    <span style="font-size: 1.1em; font-weight: 600; min-width: 30px; text-align: center; ">{{ item.qty }}</span>
+                                    <button class="qty-btn" @click="updateQty(item, 1)">+</button>
+                                </div>
+                            </td>
+                            <td style="color:#e74c3c; font-weight:800; font-size:1.2em;">
+                                $ {{ item.price * item.qty}}
+                            </td>
+                            <td>   
+                                <button class="del-btn" @click="removeFromCart(item.id)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td> 
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="cart-summary">
+                    <p class="cart-total-text">總計: <span class="cart-total-price">NT$ {{ cartTotal }}</span></p>
+                    <button class="add-btn checkout-btn">
+                        前往結帳<i class="fas fa-credit-card" style="margin-left:8px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        const { createApp, ref, computed, provide, inject } = Vue;
+
+        // 真實商品假資料 (包含來自 Unsplash 的高畫質真實圖片 URL)
+    const productData = [
+        { id: 1, name: '人體工學機械鍵盤', price: 3200, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&q=80' },
+        { id: 2, name: '無線降噪耳機', price: 5400, image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=600&q=80' },
+        { id: 3, name: '27吋 4K 專業螢幕', price: 12500, image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80' },
+        { id: 4, name: '記憶棉護腕滑鼠墊', price: 450, image: 'https://images.unsplash.com/photo-1615663245857-ac1eeb536fb8?w=600&q=80' }
+    ];
+
+    // =========================================
+    // 子組件定義
+    // =========================================
+
+    const HomeView = {
+        template: '#home-template',
+        setup() {
+            const changePage = inject('changePage');
+            const slides = inject('slides');
+            return { slides, goToProducts: () => changePage('ProductsView') };
+        }
+    };
+
+    const ProductsView = {
+        template: '#products-template',
+        setup() {
+            const products = inject('products');
+            const addToCart = inject('addToCart');
+            const showToast = inject('showToast');
+
+            const handleAddToCart = (item) => {
+                addToCart(item);
+                showToast(`已將 "${item.name}" 加入購物車！`);
+            };
+            return { products, handleAddToCart };
+        }
+    };
+
+    const CartView = {
+        template: '#cart-template',
+        setup() {
+            const cart = inject('cart');
+            const changePage = inject('changePage');
+            const removeFromCart = inject('removeFromCart');
+            const updateQty = inject('updateQty');
+
+            // 計算購物車總金額
+            const cartTotal = computed(() => {
+                return cart.value.reduce((total, item) => total + (item.price * item.qty), 0);
+            });
+
+            return { cart, cartTotal, removeFromCart, updateQty, goToProducts: () => changePage('ProductsView') };
+        }
+    };
+    // =========================================
+    //根組件
+    // =========================================
+    const App = {
+        components: { HomeView, ProductsView, CartView },
+        setup() {
+            // 1.路由狀態
+            const currentPage = ref('HomeView');
+            const changePage = (pageName) => { currentPage.value = pageName; };
+
+            //2. 購物車與商品狀態
+            const products = ref(productData);
+            const cart = ref([]);
+
+            // 輪播圖的資料陣列 (真實高畫質圖片 URL)
+            const slides = ref([
+                { id: 's1', title: '春季新品上市', description: '打造極致、高效的工作桌面', image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&q=80' },
+                { id: 's2', title: '期間限定優惠', description: '指定商品滿額享九折，加碼免運', image: 'https://images.unsplash.com/photo-1531297172864-822d1fe42045?w=1200&q=80' },
+                { id: 's3', title: '提升你的生產力', description: '專業級電競與辦公周邊配備', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1200&q=80' }
+            ]);
+
+            // 購物車邏輯方法
+            const addToCart = (product) => {
+                const existingItem = cart.value.find(item => item.id === product.id);
+                if (existingItem) {
+                    existingItem.qty++;
+                } else {
+                    cart.value.push({ ...product, qty: 1 });
+                }
+            };
+
+            const removeFromCart = (id) => {
+                cart.value = cart.value.filter(item => item.id !== id);
+            };
+
+            const updateQty = (item, amount) => {
+                item.qty += amount;
+                if (item.qty <= 0) removeFromCart(item.id);
+            };
+
+            // 購物車項目總量(供Navbar Badge使用)
+            const totalCartItems = computed(() => {
+                return cart.value.reduce((sum, item) => sum + item.qty, 0);
+            });
+
+            // 3. Toast 提示系統邏輯
+            const toasts = ref([]);
+            const showToast = (msg) => {
+                const id = Date.now();
+                toasts.value.push({ id, msg });
+                setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, 2500); // 2.5 秒後消失
+            };
+
+            // 4. 將資料與方法提供 (Provide) 給所有子組件使用
+            provide('products', products);
+            provide('cart', cart);
+            provide('addToCart', addToCart);
+            provide('removeFromCart', removeFromCart);
+            provide('updateQty', updateQty);
+            provide('changePage', changePage);
+            provide('showToast', showToast);
+            provide('slides', slides);
+
+            return { currentPage, totalCartItems, toasts };
+        }
+    };
+
+    // 掛載 Vue 應用
+    createApp(App).mount('#app');
+</script>
+    
+
+
+</body>
+</html>
