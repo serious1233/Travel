@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>Vue-影片列表</title>
+    <style>
+        body { background: #141414; color: white; font-family: sans-serif; padding: 20px; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        
+        /* 影片卡片樣式 */
+        .movie-card {
+            background: #222;
+            width: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s;
+            position: relative; /* 為了放標籤 */
+            border: 2px solid transparent; /* 預留邊框空間 */
+        }
+        .movie-card:hover { transform: scale(1.05); }
+        
+        .cover-img { width: 100%; height: 120px; object-fit: cover; }
+        .info { padding: 10px; }
+        .title { font-size: 1.1em; margin: 0 0 5px 0; }
+        .desc { font-size: 0.8em; color: #aaa; }
+
+        /* v-bind:class 會控制這個樣式 */
+        .vip-border {
+            border-color: #ffd700; /* 金色邊框 */
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        /* VIP 標籤 */
+        .vip-badge {
+            position: absolute;
+            top: 5px; right: 5px;
+            background: #ffd700;
+            color: black;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>熱門影片清單</h2>
+
+        <div class="container">
+            <a
+                v-for="movie in movieList"
+                :key="movie.id"
+                :href="movie.url"
+                class="movie-card"
+                :class="{ 'vip-border': movie.isVip }">
+                <img :src="movie.image" class="cover-img">
+                
+                <span v-if="movie.isVip" class="vip-badge">VIP</span>
+
+                <div class="info">
+                    <h3 class="title">{{ movie.title }}</h3>
+                    <p class="desc">觀看次數:{{ movie.views }}</p>
+                    <p :style="{ color: movie.score >= 9 ? '#4cd137' : '#e1b12c' }">評分: {{ movie.score }}</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const movieList = ref([
+                    { id: 1, title: "電影A", views: 1000, score: 9.2, isVip: true, image: "https://picsum.photos/id/1011/200/120", url: "#" },
+                    { id: 2, title: "電影B", views: 800, score: 8.5, isVip: false, image: "https://picsum.photos/id/1012/200/120", url: "#" },
+                    { id: 3, title: "電影C", views: 1500, score: 9.5, isVip: true, image: "https://picsum.photos/id/1013/200/120", url: "#" },
+                    { id: 4, title: "電影D", views: 600, score: 7.8, isVip: false, image: "https://picsum.photos/id/1014/200/120", url: "#" }
+                ]);
+                return { movieList };
+            }
+        }).mount("#app");
+    </script>
+</body>
+</html>
+
+    
