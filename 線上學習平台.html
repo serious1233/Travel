@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educal - 線上學習平台 Vue3 範例</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2b4eff',
+                        secondary: '#f0f3f8',
+                        'card-blue': '#2b4eff',
+                        'card-red': '#f2277e',
+                        'card-purple': '#6e38db',
+                        'card-green': '#0fa082'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans text-slate-800 antialiased overflow-x-hidden">
+    <div class="app">
+        <nav class="bg-white/80 backdrop-blur-md fixed w-full z-50 transition-all duration-300 border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2 text-2xl font-bold text-slate-800 cursor-pointer">
+                    <i class="fas far-book-open text-primary"></i>
+                    <span>Educal</span>
+                    <button class="ml-4 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-md flex items-center transition">
+                        <i class="fas fa-th mr-2"></i> 分類
+                    </button>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a v-for="link in navLinks" :key="link.name" href="#" class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center">
+                        {{ link.name }} <i v-if="link.hasDropdown" class="fas fa-chevron-down text-[10px] ml-1"></i>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button class="text-slate-600 hover:text-primary"><i class="fas fa-search"></i></button>
+                    <button class="hidden md:block bg-primary text-white text-sm font-medium px-6 py-2.5 rounded hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">
+                        免費註冊
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <section class="bg-(#f0f3f8) pt-32 pb-20 lg:pt-40 lg:pb-28 px-6 relative overflow-hidden">
+            <div class="absolute top-20 left-10 w-4 h-4 bg-pink-400 rounded-full opacity-50"></div>
+            <div class="absolute bottom-20 right-20 w-8 h-8 border-4 border-blue-400 rounded-full opacity-50"></div>
+
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="z-10 relative">
+                    <h1 class="text-4xl lg:text-6xl font-bold text-slate-800 leading-tight mb-6">
+                        打造你專屬的<br>
+                        <span class="text-primary relative">
+                            線上學習平台
+                            <svg class="absolute w-full h-3 -bottom-1 left-0 text-yellow-400" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="4" fill="transparent"/></svg>
+                        </span>
+                    </h1>
+                    <p class="text-slate-500 text-lg mb-8 max-w-md">
+                        解鎖所有超過 60+ 位專業講師的無限存取權限。只要 $240 即可暢遊所有課程。
+                    </p>
+                    <div class="bg-white p-2 rounded-lg shadow-lg flex items-center max-w-md">
+                        <input type="text" placeholder="你想學習什麼？" class="flex-1 px-4 py-3 outline-none text-sm text-slate-700 placeholder-slate-400">
+                        <button class="bg-primary text-white w-12 h-12 rounded flex items-center justify-center hover:bg-blue-700 transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-4"><i class="fas fa-check-circle text-emerald-500 mr-1"></i> 保證能找到適合你的課程。</p>
+                </div>
+                <div class="relative hidden lg:block h-[500px]">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Student" class="absolute right-0 bottom-0 w-4/5 h-[90%] object-cover rounded-2xl shadow-2xl z-10">
+                    
+                    <div class="absolute top-20 right-10 bg-white p-3 rounded-lg shadow-xl z-20 flex items-center space-x-3 animate-bounce" style="animation-duration: 3s;">
+                        <div class="w-10 h-10 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center"><i class="fas fa-trophy"></i></div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-800">恭喜！</p>
+                            <p class="text-[10px] text-slate-500">已完成課程報名</p>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-32 left-10 bg-white p-3 rounded-lg shadow-xl z-20 flex items-center space-x-3 animate-bounce" style="animation-duration: 4s; animation-delay: 1s;">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center"><i class="fas fa-users"></i></div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">450K</p>
+                            <p class="text-[10px] text-slate-500">協助學生</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 px-6 max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">為何我們的教育方式<br>與眾不同</h2>
+                <p class="text-slate-500">你不必獨自奮鬥，我們為你提供全方位的協助與支援</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div v-for="feature in features" :key="feature.id" class="rounded-xl p-8 text-white transition-transform hover:-translate-y-2 cursor-pointer shadow-lg" :class="feature.bgColor">
+                    <div class="w-14 h-14 bg-white/20 rounded-lg flex items-center justify-center text-2xl mb-6">
+                        <i :class="feature.icon"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">{{ feature.title }}</h3>
+                    <p class="text-sm leading-relaxed">{{ feature.desc }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 px-6 bg-white">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="relative">
+                    <div class="absolute -inset-4 bg-secondary rounded-3xl transform -rotate-2"></div>
+                    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Learning" class="relative rounded-2xl shadow-xl z-10 w-full object-cover h-[400px]">
+                    <div class="absolute -bottom-8 left-8 bg-white p-4 rounded-xl shadow-xl z-20 flex items-center space-x-4 border border-gray-100">
+                        <div class="flex -space-x-3">
+                            <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80" alt="Avatar">
+                            <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80" alt="Avatar">
+                            <div class="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">+</div>
+                        </div>
+                        <div class="text-sm font-bold text-slate-800">超過 4,000+ 名學生加入</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-3xl lg:text-4xl font-bold text-slate-800 mb-6">透過Educal達成<br>你的學習目標</h2>
+                    <p class="text-slate-500 mb-8 leading-relaxed">
+                        不要錯過這個機會！與頂尖導師一起探索最新知識，提升你的專業技能，我們將伴隨你完成每一個學習階段。
+                    </p>
+
+                    <ul class="space-y-4 mb-10">
+                        <li v-for="point in goalPoints" class="flex items-start text-slate-700 font-medium">
+                            <i class="fas fa-check mt-1 text-primary mr-3 bg-blue-50 p-1 rounded-full text-[10px]"></i>
+                            {{ point }}
+                        </li>
+                    </ul>
+
+                    <button class="bg-transparent border-2 border-slate-200 text-slate-800 font-bold px-8 py-3 rounded hover:bg-slate-50 hover:border-slate-300 transition">
+                        立即申請
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+        createApp({
+            setup() {
+                const navLinks = ref([
+                    { name: '首頁', hasDropdown: true },
+                    { name: '課程', hasDropdown: true },
+                    { name: '部落格', hasDropdown: true },
+                    { name: '頁面', hasDropdown: true },
+                    { name: '聯絡我們', hasDropdown: false }
+                ]);
+
+                // 四格特色卡片資料(對應圖片中間的四個色塊)
+                const features = ref([
+                    { id: 1, title: '4000+ 線上課程', desc: '從基礎到進階，涵蓋各種豐富課程內容，滿足你的所有學習需求。', icon: 'fas fa-tv', bgColor: 'bg-card-blue' },
+                    { id: 2, title: '就業輔導支援', desc: '提供履歷健檢與面試指導，協助你順利接軌職場，找到理想工作。', icon: 'fas fa-briefcase', bgColor: 'bg-card-red' },
+                    { id: 3, title: '終身社群問答', desc: '加入專屬Slack社群，隨時與導師及同學交流，解決學習疑難雜症。', icon: 'fas fa-users', bgColor: 'bg-card-purple' },
+                    { id: 4, title: '研究與創新', desc: '掌握業界最新趨勢，參與實作專案，培養解決實際問題的能力。', icon: 'fas fa-flask', bgColor: 'bg-card-green' }
+                ]);
+
+                // 目標清單資料
+                const goalPoints = ref([
+                    '提升你所屬組織的競爭力',
+                    '存取超過100k堂高品質線上課程',
+                    '向業界頂尖專家學習最新技能'
+                ]);
+
+                return { navLinks, features, goalPoints };
+            }
+        }).mount('.app');
+    </script>
+    
+</body>
