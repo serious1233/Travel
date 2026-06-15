@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>OVRO-個人履歷與作品集</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors:{
+                        ovro:{
+                            bg:"#121719",       //深色背景
+                            card:"#1b2224",     //卡片背景
+                            accent:"#ffb400",   //亮黃色點綴
+                            text:"#9ca3af",     //灰色文字
+                            lightBg:"#f3f4f6",  //淺色背景
+                            lightCard:"#ffffff",//淺色卡片背景
+                        }
+                    },
+                    fontFamily:{
+                        sans:['Noto Sans TC', 'sans-serif'],//'Georgia','serif'
+                        serif:['Noto Serif TC', 'serif'],//'Inter','sans-serif'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 隱藏卷軸 */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        /* 旋轉文字動畫 */
+        @keyframes spin-slow {
+            100% { transform: rotate(360deg);}
+        }
+        .animate-spin-slow {
+            animation: spin-slow 10s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-ovro-lightBg dark:bg-ovro-bg text-gray-800 dark:text-gray-200 transition-colors duration-500 font-sans min-h-screen flex items-center justify-center p-4 lg:p-10">
+    <div id="app" class="w-full max-w-[1200px] h-full min-h-[800px] flex flex-col">
+
+        <header class="flex justify-between items-center mb-8 px-2">
+            <div class="flex items-center space-x-6">
+                <button @click="toggleTheme" class="flex items-center bg-gray-200 dark:bg-ovro-card rounded-full p-1 w-16 h-8 relative transition-colors duration-300 shadow-inner">
+                    <div :class="isDark ? 'translate-x-8 bg-ovro-accent' : 'translate-x-0 bg-white'" 
+                         class="w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center text-[10px]">
+                    </div>
+                </button>
+
+                <button class="bg-ovro-accent text-gray-900 font-bold px-6 py-2 rounded-full text-sm hover:scale-105 transition-transform flex items-center">
+                    HIRE ME <i class="fas fa-paper-plane ml-2"></i>
+                </button>
+
+                <button class="text-xl text-gray-600 dark:text-gray-400 hover:text-ovro-accent dark:hover:text-ovro-accent transition">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </header>
+        
+        <main class="flex flex-col lg:flex-row gap-6 flex-1">
+
+            <nav class="hidden lg:flex flex-col bg-white dark:bg-ovro-card rounded-3xl w-20 py-6 items-center shadow-lg transition-colors duration-500">
+                <div class="space-y-6 flex flex-col">
+                    <button v-for="item in navItems" :key="item.id" @click="activeTab = item.id"
+                            :class="[
+                                'w-12 h-12 rounded-xl flex items-center justify-center text-lg transition-all duration-300',
+                                activeTab === item.id 
+                                    ? 'bg-ovro-accent text-gray-900 shadow-lg shadow-ovro-accent/30 scale-110' 
+                                    : 'text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
+                            ]">
+                        <i :class="item.icon"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <aside class="bg-white dark:bg-ovro-card rounded-[32px] p-8 lg:w-[350px] flex flex-col items-center text-center shadow-lg transition-colors duration-500">
+                <div class="w-48 h-48 rounded-3xl overflow-hidden mb-6 border-4 border-gray-100 dark:border-gray-800 shadow-inner relative group">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Profile" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-ovro-accent/20 mix-blend-overlay"></div>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ profile.name }}</h2>
+                <p class="text-sm text-gray-500 dark:text-ovro-text mb-6 leading-relaxed">{{ profile.bio }}</p>
+
+                <div class="flex space-x-3 mb-8">
+                    <a v-for="social in socials" :key="social.icon" :href="social.link" 
+                       class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:text-ovro-accent hover:border-ovro-accent transition-all duration-300">
+                        <i :class="social.icon"></i>
+                    </a>
+                </div>
+
+                <button class="w-full bg-ovro-accent text-gray-900 font-bold py-4 rounded-2xl hover:bg-yellow-500 hover:shadow-lg transition-all flex items-center justify-center mt-auto">
+                    下載履歷 (CV) <i class="fas fa-download ml-2"></i>
+                </button>
+                <p class="text-[10px] text-gray-400 mt-4">2024 OVRO. 版權所有</p>
+            </aside>
+
+            <section class="flex-1 flex-col justify-center px-4 lg:px-12 py-10 relative">
+
+                <div class="flex items-center text-ovro-accent font-medium mb-6">
+                    <i class="fas fa-hand-sparkles mr-2 text-xl"></i>
+                    <span>Hi, 我是 {{ profile.name }}, {{ profile.role }}</span>
+                </div>
+
+                <h1 class="text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-[1,1] mb-8">
+                    設計直覺的<br>
+                    使用者體驗<br>
+                    <span class="font-serif italic text-ovro-accent tracking-wide">Inspire</span>
+                </h1>
+
+                <p class="text-gray-500 dark:text-ovro-text text-lg max-w-xl mb-12 leading-relaxed">
+                    我是一位專注於創造直覺且美觀的使用者體驗的設計師。我的作品結合了創新思維與實用性，旨在為用戶帶來愉悅且高效的數位體驗。無論是網站、應用程式還是品牌識別，我都致力於將每一個細節打磨到完美，讓每一個互動都充滿驚喜與靈感。
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between mt-auto">
+
+                    <div class="flex items-center space-x-6 mb-8 sm:mb-0">
+                        <div class="relative w-24 h-24 flex items-center justify-center rounded-full border border-gray-300 dark:border-gray-700">
+                            <div class="absolute inset-0 animate-spin-slow rounded-full border border-dashed border-gray-400 dark:border-gray-600"></div>
+                            <i class="fas fa-arrow-up-right-from-square text-gray-400 text-xl"></i>
+                        </div>
+                        
+                        <div>
+                            <div class="flex -space-x-3 mb-2">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" class="w-10 h-10 rounded-full border-2 border-white dark:border-ovro-bg">
+                                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100" class="w-10 h-10 rounded-full border-2 border-white dark:border-ovro-bg">
+                                <div class="w-10 h-10 rounded-full bg-ovro-accent text-gray-900 flex items-center justify-center font-bold text-xs border-2 border-white dark:border-ovro-bg">2K+</div>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-ovro-text">
+                                <strong class="text-gray-900 dark:text-white">2k+ 評價</strong><br>
+                                (滿分5分中的4.90)
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="bg-gray-200 dark:bg-[#252f31] hover:bg-gray-300 dark:hover:bg-[#2c383a] text-gray-900 dark:text-white px-8 py-6 rounded-2xl flex items-center justify-between w-full sm:w-auto min-w-[300px] transition-colors shadow-sm group">
+                        <span class="text-2xl font-bold">讓我們合作吧</span>
+                        <div class="w-10 h-10 bg-white dark:bg-[#1b2224] rounded-full flex items-center justify-center group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform">
+                            <i class="fas fa-arrow-right transform -rotate-45"></i>
+                        </div>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // 深色模式管理
+                const isDark = ref(true);
+
+                const toggleTheme = () => {
+                    isDark.value = !isDark.value;
+                    if (isDark.value) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                };
+
+                // 初始化檢查(確保預設為深色模式，符合圖片主視覺)
+                onMounted(() => {
+                        document.documentElement.classList.add('dark');
+                    }
+                );
+
+                // 導覽列資料
+                const activeTab = ref('home');
+                const navItems = ref([
+                    { id: 'home', icon: 'fas fa-home' },
+                    { id: 'about', icon: 'fas fa-user' },
+                    { id: 'portfolio', icon: 'fas fa-layer-group' },
+                    { id: 'services', icon: 'fas fa-paint-brush' },
+                    { id: 'resume', icon: 'fas fa-file-alt' },
+                    { id: 'contact', icon: 'fas fa-envelope' },
+                ]);
+
+                // 個人資料
+                const profile = ref({
+                    name: 'Alex Chen',
+                    role: 'UI/UX 設計師',
+                    bio: '專注於創造直覺且美觀的使用者體驗，結合創新思維與實用性，為用戶帶來愉悅且高效的數位體驗。'
+                });
+
+                // 社交媒體連結
+                const socials = ref([
+                    { icon: 'fab fa-twitter', link: '#' },
+                    { icon: 'fab fa-instagram', link: '#' },
+                    { icon: 'fab fa-facebook', link: '#' },
+                    { icon: 'fab fa-linkedin-in', link: '#' },
+                    { icon: 'fab fa-github', link: '#' },
+                ]);
+
+                return {
+                    isDark,
+                    toggleTheme,
+                    activeTab,
+                    navItems,
+                    profile,
+                    socials
+                };
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+</html>

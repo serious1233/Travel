@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Vue3 音樂播放器</title>
+    <style>
+        :root {
+            --primary: #8a2be2;
+            --bg-color: #1e1e2f;
+            --card-bg: #2a2a40;
+            --text-main: #ffffff;
+            --text-muted: #a0a0b5;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+        }
+.player-card {
+            background-color: var(--card-bg);
+            width: 320px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+
+        .cover-img {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border: 4px solid #3f3f5a;
+            transition: transform 0.3s;
+        }
+
+        .cover-img.playing {
+            animation: spin 15s linear infinite;
+        }
+@keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .song-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 5px;
+        }
+
+        .artist {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* 進度條設計 */
+        .progress-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background-color: #3f3f5a;
+            height: 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            background-color: var(--primary);
+            height: 100%;
+            border-radius: 3px;
+            width: 0%; /* 由 Vue 動態控制 */
+            transition: width 0.1s linear;
+        }
+.time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* 控制按鈕區 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            color: var(--primary);
+        }
+
+        .btn:active {
+            transform: scale(0.9);
+        }
+.btn-play {
+            background-color: var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-play:hover {
+            background-color: #9b4dff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="player-card">
+            <!--隱藏的audio標籤，用來實際處理音樂 -->
+            <audio ref="audioPlayer" :src="currentSong.url" @timeupdate="updateProgress" @loadedmetadata="setDuration" @ended="nextSong"></audio>
+
+            <!-- 唱片封面(播放時會旋轉) -->
+            <img :src="currentSong.cover" alt="封面" :class="['cover-img', { playing: isPlaying }]">
+
+            <h2 class="song-title">{{ currentSong.title }}</h2>
+            <div class="artist">{{ currentSong.artist }}</div>
+        
+            <!-- 進度條 -->
+            <div class="progress-container">
+                <div class="progress-bar" @click="setProgress">
+                    <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                </div>
+                <div class="time-info">
+                    <span>{{ formatTime(currentTime) }}</span>
+                    <span>{{ formatTime(duration) }}</span>
+                </div>
+            </div>
+
+            <!-- 控制器 -->
+            <div class="controls">
+                <button class="btn" @click="prevSong"><i class="fas fa-step-backward"></i></button>
+                <button class="btn btn-play" @click="togglePlay">
+                    <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+                </button>
+                <button class="btn" @click="nextSong"><i class="fas fa-step-forward"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+        createApp({
+            setup() {
+                // 準備音樂清單(包含真實的無版權測試音樂)
+                const songs = ref([
+                    {
+                        title: '歌曲一',
+                        artist: '藝術家A',
+                        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                        cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80'
+                    },
+                    {
+                        title: '歌曲二',
+                        artist: '藝術家B',
+                        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+                        cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80'
+                    },
+                    {
+                        title: '歌曲三',
+                        artist: '藝術家C',
+                        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+                        cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80'
+                    }
+                ]);
+
+                // 2.宣告響應式狀態(state)
+                const currentSongIndex = ref(0);
+                const isPlaying = ref(false);
+                const currentTime = ref(0);
+                const duration = ref(0);
+                const audioPlayer = ref(null); // 綁定 HTML 的 <audio> 標籤
+
+                // 3.計算屬性(computed)
+                // 取得目前的歌曲物件
+                const currentSong = computed(() => songs.value[currentSongIndex.value]);
+
+                // 計算進度條百分比
+                const progressPercent = computed(() => {
+                    if (duration.value === 0) return 0;
+                    return (currentTime.value / duration.value) * 100;
+                });
+
+                // 4.方法(methods)
+
+                // 播放/暫停切換
+                const togglePlay = () => {
+                    if (isPlaying.value) {
+                        audioPlayer.value.pause();
+                    } else {
+                        audioPlayer.value.play();
+                    }
+                    isPlaying.value = !isPlaying.value;
+                };
+
+                // 上一首
+                const prevSong = () => {
+                    currentSongIndex.value = (currentSongIndex.value - 1 + songs.value.length) % songs.value.length;
+                    playAfterChange();
+                };
+
+                // 下一首
+                const nextSong = () => {
+                    currentSongIndex.value = (currentSongIndex.value + 1) % songs.value.length;
+                    playAfterChange();
+                };
+
+                // 切換歌曲保持播放狀態
+                const playAfterChange = () => {
+                    // Vue偵測到src改變後需要一點時間掛載，我們使用setTimeout 或直接等他載入
+                    setTimeout(() => {
+                        if (isPlaying.value) {
+                            audioPlayer.value.play();
+                        }
+                    }, 100);
+                };
+
+                // 更新目前播放時間(綁定@timeupdae)
+                const updateProgress = (e) => {
+                    currentTime.value = e.target.currentTime;
+                };
+
+                // 設定歌曲總長度(綁定@loadedmetadata)
+                const setDuration = (e) => {
+                    duration.value = e.target.duration;
+                };
+
+                // 點擊進度條跳轉時間
+                const setProgress = (e) => {
+                const width = e.target.clientWidth;
+                const clickX = e.offsetX;
+                const setTime = (clickX / width) * duration.value;
+                audioPlayer.value.currentTime = setTime;
+                currentTime.value = setTime;
+                };
+
+                // 將秒數格式化為 分:秒 (例如 3:05)
+                const formatTime = (time) => {
+                if (isNaN(time)) return '0:00';
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                };
+
+                // 5.匯出給Template使用
+                return {
+                    currentSong,
+                    isPlaying,
+                    currentTime,
+                    duration,
+                    progressPercent,
+                    audioPlayer,
+                    togglePlay,
+                    prevSong,
+                    nextSong,
+                    updateProgress,
+                    setDuration,
+                    setProgress,
+                    formatTime
+                };
+            }
+        }).mount('#app');
+
+    </script>
+
+</body>
+</html>
